@@ -30,7 +30,7 @@
       --card: #fff8e9;
       --safe-b: env(safe-area-inset-bottom, 0px);
       --safe-t: env(safe-area-inset-top, 0px);
-      --cover: url("cover.jpg?v=3");
+      --cover: url("cover.jpg?v=4");
       --mono: "IBM Plex Mono", ui-monospace, monospace;
       --serif: "Instrument Serif", Georgia, serif;
     }
@@ -142,7 +142,7 @@
       background: #e9cf9f;
       display: grid;
       grid-template-columns: minmax(0,1.05fr) minmax(280px,.95fr);
-      margin: 34px 6vw 55px;
+      margin: 0 0 55px;
       min-height: 520px;
       overflow: hidden;
     }
@@ -328,7 +328,7 @@
       .topbar { height: 68px; padding: 0 20px; }
       .people > span:last-of-type, .sync-label { display: none; }
       .sync-pill { margin-right: 10px; }
-      .stage { grid-template-columns: 1fr; min-height: 0; margin: 18px 20px 42px; }
+      .stage { grid-template-columns: 1fr; min-height: 0; margin: 0 0 42px; }
       .cover-photo { object-position: center 22%; height: 430px; min-height: 0; }
       .hero-copy { min-height: 240px; padding: 38px 24px; }
       .hero-copy h1 { font-size: 42px; }
@@ -943,7 +943,7 @@
       const syncWorking = syncStatus === "saving" ? " working" : "";
       return `
         <header class="topbar">
-          <a class="brand" href="#inicio"><span>↗</span> ENTRE DOS</a>
+          <a class="brand" href="#inicio">ENTRE DOS</a>
           <div class="people">
             <i class="sync-dot${syncWorking}"></i>
             <button class="sync-pill ${syncStatus}" id="syncPill" type="button">${syncLabel()}</button>
@@ -953,9 +953,9 @@
           </div>
         </header>
         <section class="stage" id="inicio">
-          <img class="cover-photo" src="cover.jpg?v=3" alt="Israel y Dario frente a la casa" />
+          <img class="cover-photo" src="cover.jpg?v=4" alt="Israel y Dario frente a la casa" />
           <div class="hero-copy">
-            <div class="eyebrow">${esc(monthName)}</div>
+            <div class="eyebrow"><span></span> ${esc(monthName)}</div>
             <h1>Las cuentas claras.<br/><em>La casa en paz.</em></h1>
           </div>
         </section>

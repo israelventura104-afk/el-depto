@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#8b4a28" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="El depto" />
+  <title>El depto · Israel y Dario</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230d9b7a'/%3E%3Cpath d='M20 36c0-8 5-14 12-14 5 0 9 3 10 7' stroke='white' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='34' r='3' fill='white'/%3E%3Cpath d='M44 28c0 8-5 14-12 14-5 0-9-3-10-7' stroke='white' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --bg: #f3e8d6;
+      --card: #fffaf3;
+      --ink: #2a1b12;
+      --muted: #7a5c4a;
+      --line: #ead7c0;
+      --teal: #c45a32;
+      --teal-ink: #8b3418;
+      --teal-soft: #f6d7c6;
+      --sky: #4ea0d4;
+      --navy: #2b5f8a;
+      --owe: #c43b3b;
+      --owe-soft: #fdecec;
+      --shadow: 0 10px 28px rgba(90, 48, 24, 0.10);
+      --safe-b: env(safe-area-inset-bottom, 0px);
+      --safe-t: env(safe-area-inset-top, 0px);
+      --cover: url("cover.jpg");
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: Outfit, "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(900px 420px at 50% -80px, #f7d7a8 0%, transparent 55%),
+        var(--bg);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; border: 0; background: none; color: inherit; }
+    input, select {
+      width: 100%;
+      border: 1.5px solid var(--line);
+      background: #fff;
+      border-radius: 14px;
+      padding: 14px 14px;
+      font-size: 16px;
+      color: var(--ink);
+      outline: none;
+    }
+    input:focus, select:focus { border-color: var(--teal); box-shadow: 0 0 0 4px var(--teal-soft); }
+    .app {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100%;
+      padding: calc(18px + var(--safe-t)) 16px calc(96px + var(--safe-b));
+      position: relative;
+    }
+    .app.is-home { padding: 0 0 calc(96px + var(--safe-b)); }
+    .pad { padding: 0 16px; }
+    .hidden { display: none !important; }
+
+    /* Onboarding */
+    .setup {
+      min-height: calc(100vh - 40px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 18px;
+      padding-bottom: 40px;
+    }
+    .setup-cover {
+      margin: -8px -4px 4px;
+      height: 210px;
+      border-radius: 22px;
+      background: var(--cover) center 22% / cover no-repeat;
+      box-shadow: 0 14px 32px rgba(90, 48, 24, .22);
+      position: relative;
+      overflow: hidden;
+    }
+    .setup-cover::after {
+      content: "";
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent 40%, rgba(42,27,18,.55) 100%);
+    }
+    .mark {
+      width: 56px; height: 56px; border-radius: 16px;
+      background: var(--teal); color: #fff;
+      display: grid; place-items: center;
+      font-weight: 800; font-size: 26px;
+      box-shadow: 0 10px 24px rgba(196,90,50,.35);
+    }
+    h1 { font-size: 30px; letter-spacing: -.03em; line-height: 1.15; }
+    .lede { color: var(--muted); font-size: 15px; line-height: 1.45; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field span { font-size: 13px; font-weight: 600; color: var(--muted); }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      min-height: 52px; padding: 0 18px; border-radius: 16px;
+      background: var(--teal); color: #fff; font-weight: 700;
+      box-shadow: 0 8px 18px rgba(196,90,50,.28);
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn.ghost {
+      background: #fff; color: var(--ink); box-shadow: none;
+      border: 1.5px solid var(--line);
+    }
+    .btn.danger { background: var(--owe); box-shadow: none; }
+    .btn.full { width: 100%; }
+
+    /* Cover like Splitwise group */
+    .cover {
+      position: relative;
+      height: 318px;
+      overflow: hidden;
+      background: #8b4a28;
+    }
+    .cover img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: 50% 18%;
+      display: block;
+      transform: scale(1.04);
+    }
+    .cover-fade {
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(180deg, rgba(42,27,18,.15) 0%, transparent 28%, transparent 42%, rgba(42,27,18,.78) 100%);
+      pointer-events: none;
+    }
+    .cover-gear {
+      position: absolute;
+      top: calc(12px + var(--safe-t));
+      right: 14px;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,.22);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      display: grid; place-items: center;
+      border: 1px solid rgba(255,255,255,.35);
+    }
+    .cover-meta {
+      position: absolute; left: 16px; right: 16px; bottom: 48px;
+      color: #fff;
+    }
+    .cover-avatars { display: flex; margin-bottom: 8px; }
+    .av {
+      width: 42px; height: 42px; border-radius: 50%;
+      display: grid; place-items: center; font-weight: 700; color: #fff;
+      border: 2px solid rgba(255,255,255,.9);
+      box-shadow: 0 4px 12px rgba(0,0,0,.25);
+      background-size: 340%;
+      background-repeat: no-repeat;
+      overflow: hidden;
+    }
+    .av.a { background-image: var(--cover); background-position: 18% 20%; }
+    .av.b { background-image: var(--cover); background-position: 78% 22%; margin-left: -12px; }
+    .cover-meta h1 {
+      font-size: 28px; letter-spacing: -.03em; text-shadow: 0 2px 16px rgba(0,0,0,.35);
+    }
+    .cover-meta p {
+      font-size: 14px; opacity: .92; font-weight: 500;
+      text-shadow: 0 1px 8px rgba(0,0,0,.35);
+    }
+
+    .hero {
+      background: linear-gradient(165deg, #c45a32 0%, #9a3d1e 100%);
+      color: #fff; border-radius: 22px; padding: 18px 18px 16px;
+      box-shadow: 0 16px 36px rgba(154, 61, 30, .28);
+      margin: -38px 16px 14px;
+      position: relative;
+      z-index: 2;
+    }
+    .hero .label { opacity: .82; font-size: 13px; font-weight: 500; }
+    .hero .amount {
+      font-size: 36px; font-weight: 800; letter-spacing: -.04em;
+      margin: 4px 0 8px; line-height: 1.05;
+    }
+    .hero .sub { font-size: 14px; opacity: .92; }
+    .hero.even {
+      background: linear-gradient(165deg, #2b5f8a 0%, #1d4060 100%);
+      box-shadow: 0 16px 36px rgba(29, 64, 96, .25);
+    }
+    .hero-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+    .hero .btn { background: rgba(255,255,255,.16); box-shadow: none; min-height: 42px; font-size: 14px; }
+    .hero .btn:hover { background: rgba(255,255,255,.24); }
+
+    .icon-btn {
+      width: 40px; height: 40px; border-radius: 12px; background: #fff;
+      display: grid; place-items: center; border: 1.5px solid var(--line);
+    }
+
+    .month-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin: 8px 18px 12px; color: var(--muted); font-size: 13px; font-weight: 600;
+    }
+
+    .list { display: flex; flex-direction: column; gap: 8px; padding: 0 16px; }
+    .group-title {
+      font-size: 12px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em;
+      margin: 10px 4px 2px;
+    }
+    .item {
+      background: var(--card); border-radius: 18px; padding: 12px 12px;
+      display: grid; grid-template-columns: 42px 1fr auto; gap: 10px; align-items: center;
+      box-shadow: var(--shadow); width: 100%; text-align: left;
+    }
+    .item .dot {
+      width: 42px; height: 42px; border-radius: 14px;
+      background: var(--teal-soft); color: var(--teal-ink);
+      display: grid; place-items: center; font-size: 18px;
+    }
+    .item .dot.settle { background: #dceaf4; }
+    .item b { display: block; font-size: 15px; font-weight: 650; }
+    .item .meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .item .cash { font-weight: 700; font-size: 15px; }
+    .item .share { display: block; font-size: 11px; color: var(--muted); text-align: right; margin-top: 2px; }
+
+    .empty {
+      text-align: center; padding: 36px 12px; color: var(--muted);
+    }
+    .empty strong { display: block; color: var(--ink); font-size: 17px; margin-bottom: 6px; }
+
+    .fab {
+      position: fixed; left: 50%; transform: translateX(-50%);
+      bottom: calc(18px + var(--safe-b));
+      width: min(398px, calc(100% - 32px));
+      z-index: 5;
+    }
+
+    /* Sheets */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(42, 27, 18, .48);
+      z-index: 20; display: flex; align-items: flex-end; justify-content: center;
+    }
+    .sheet {
+      width: min(430px, 100%);
+      background: #fffaf3;
+      border-radius: 24px 24px 0 0;
+      padding: 10px 16px calc(18px + var(--safe-b));
+      max-height: 92vh; overflow: auto;
+      animation: up .22s ease;
+    }
+    @keyframes up { from { transform: translateY(24px); opacity: .6; } }
+    .grab {
+      width: 42px; height: 5px; border-radius: 99px; background: #e4d0ba;
+      margin: 4px auto 14px;
+    }
+    .sheet h2 { font-size: 20px; margin-bottom: 14px; }
+    .amount-box { text-align: center; margin: 4px 0 14px; }
+    .amount-box input {
+      border: 0; box-shadow: none; text-align: center;
+      font-size: 44px; font-weight: 800; letter-spacing: -.04em; padding: 0;
+    }
+    .amount-box input:focus { box-shadow: none; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      flex: 1; min-height: 44px; border-radius: 14px;
+      border: 1.5px solid var(--line); background: #fff; font-weight: 650; font-size: 14px;
+    }
+    .chip.on { border-color: var(--teal); background: var(--teal-soft); color: var(--teal-ink); }
+    .stack { display: flex; flex-direction: column; gap: 12px; }
+    .hint { font-size: 13px; color: var(--muted); line-height: 1.4; }
+    .toast {
+      position: fixed; left: 50%; bottom: calc(84px + var(--safe-b));
+      transform: translateX(-50%);
+      background: #2a1b12; color: #fff; padding: 10px 14px; border-radius: 12px;
+      font-size: 13px; z-index: 40; white-space: nowrap;
+    }
+
+    .settings .danger-zone { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+    textarea {
+      width: 100%; min-height: 90px; border-radius: 14px; border: 1.5px solid var(--line);
+      padding: 12px; font: inherit; font-size: 13px; resize: vertical;
+    }
+    .sync-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 10px; padding: 5px 10px; border-radius: 99px;
+      background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.3);
+      color: #fff; font-size: 12px; font-weight: 650;
+    }
+    .sync-pill i {
+      width: 8px; height: 8px; border-radius: 50%; background: #8ef0b6;
+      box-shadow: 0 0 0 3px rgba(142,240,182,.25);
+    }
+    .sync-pill.saving i { background: #ffd36a; box-shadow: none; }
+    .sync-pill.err i, .sync-pill.off i { background: #ffb020; box-shadow: none; }
+    .home-grid { display: block; }
+
+    @media (min-width: 900px) {
+      body {
+        background:
+          radial-gradient(1200px 500px at 50% -120px, #f3c98a 0%, transparent 55%),
+          #e8d2b4;
+      }
+      .app {
+        max-width: 1080px;
+      }
+      .app.is-home {
+        max-width: 1080px;
+        margin: 28px auto 36px;
+        background: #f7efe3;
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 28px 70px rgba(90, 48, 24, .18);
+        padding-bottom: 28px;
+        min-height: calc(100vh - 64px);
+      }
+      .cover { height: 420px; }
+      .cover img { object-position: 50% 18%; }
+      .cover-meta { left: 32px; bottom: 58px; }
+      .cover-meta h1 { font-size: 42px; }
+      .cover-gear { top: 18px; right: 18px; width: 46px; height: 46px; }
+      .home-grid {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 24px;
+        padding: 0 28px 4px;
+        align-items: start;
+      }
+      .hero {
+        margin: -56px 0 0;
+        padding: 22px 22px 18px;
+      }
+      .hero .amount { font-size: 40px; }
+      .month-bar { margin: 10px 0 12px; }
+      .list { padding: 0; }
+      .item { padding: 14px; }
+      .fab {
+        position: static;
+        transform: none;
+        width: 100%;
+        margin-top: 14px;
+      }
+      .overlay { align-items: center; }
+      .sheet {
+        width: min(480px, 92vw);
+        border-radius: 24px;
+        max-height: 86vh;
+        margin: 24px;
+      }
+      .setup { max-width: 480px; margin: 0 auto; padding-top: 12px; }
+      .setup-cover { height: 280px; }
+      .toast { bottom: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app"></div>
+  <div id="overlay"></div>
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="splitwise-data.js"></script>
+  <script>
+    const KEY = "cuentas-roomie-v1";
+    const ROOM_KEY = "cuentas-roomie-room";
+    const ME_KEY = "cuentas-roomie-me";
+    const BLOB = "https://jsonblob.com/api/jsonBlob";
+    const $ = (id) => document.getElementById(id);
+
+    const ICONS = {
+      super: "🛒", comida: "🍕", renta: "🏠", luz: "💡", agua: "🚿",
+      gas: "🔥", internet: "📶", uber: "🚗", taxi: "🚕",
+      farmacia: "💊", limpia: "🧹", mascota: "🐾", extra: "💸",
+      settle: "🤝"
+    };
+
+    const CURRENCIES = [
+      { code: "MXN", symbol: "$", locale: "es-MX" },
+      { code: "USD", symbol: "US$", locale: "en-US" },
+      { code: "EUR", symbol: "€", locale: "es-ES" },
+      { code: "ARS", symbol: "$", locale: "es-AR" },
+      { code: "COP", symbol: "$", locale: "es-CO" },
+      { code: "CLP", symbol: "$", locale: "es-CL" },
+      { code: "PEN", symbol: "S/", locale: "es-PE" },
+    ];
+
+    function uid() {
+      return crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
+    }
+
+    function load() {
+      try { return JSON.parse(localStorage.getItem(KEY) || "null"); }
+      catch { return null; }
+    }
+    function localSave() {
+      localStorage.setItem(KEY, JSON.stringify(state));
+    }
+    function save() {
+      if (state) state.updatedAt = Date.now();
+      localSave();
+      schedulePush();
+    }
+
+    function parseAmount(raw) {
+      let s = String(raw).trim().replace(/[^\d,.-]/g, "");
+      if (!s) return NaN;
+      if (s.includes(",") && s.includes(".")) {
+        if (s.lastIndexOf(",") > s.lastIndexOf(".")) s = s.replace(/\./g, "").replace(",", ".");
+        else s = s.replace(/,/g, "");
+      } else if (s.includes(",")) {
+        s = s.replace(",", ".");
+      }
+      const n = Number(s);
+      return Number.isFinite(n) ? n : NaN;
+    }
+
+    function money(n, state) {
+      const cur = CURRENCIES.find((c) => c.code === state.currency) || CURRENCIES[0];
+      try {
+        return new Intl.NumberFormat(cur.locale, {
+          style: "currency",
+          currency: cur.code,
+          maximumFractionDigits: 2,
+        }).format(n);
+      } catch {
+        return cur.symbol + Number(n).toFixed(2);
+      }
+    }
+
+    function iconFor(desc, type) {
+      if (type === "settle") return ICONS.settle;
+      const t = (desc || "").toLowerCase();
+      for (const [k, v] of Object.entries(ICONS)) {
+        if (k !== "settle" && t.includes(k)) return v;
+      }
+      if (/super|walmart|soriana|oxxo|chedraui|mercado/.test(t)) return "🛒";
+      if (/luz|cfe|electric/.test(t)) return "💡";
+      if (/renta|alquiler|depto|casa/.test(t)) return "🏠";
+      if (/uber|didi|gasolina|taxi/.test(t)) return "🚗";
+      if (/comida|pizza|tacos|restaurante|rappi/.test(t)) return "🍕";
+      if (/netflix|spotify|internet|wifi/.test(t)) return "📶";
+      return "💸";
+    }
+
+    function when(ts) {
+      const d = new Date(ts);
+      const now = new Date();
+      const one = 86400000;
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const diff = (start - day) / one;
+      if (diff === 0) return "Hoy";
+      if (diff === 1) return "Ayer";
+      return d.toLocaleDateString("es", { day: "numeric", month: "short" });
+    }
+
+    function monthKey(ts) {
+      const d = new Date(ts);
+      return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+    }
+    function monthLabel(key) {
+      const [y, m] = key.split("-").map(Number);
+      const d = new Date(y, m - 1, 1);
+      const now = new Date();
+      if (y === now.getFullYear() && m === now.getMonth() + 1) return "Este mes";
+      return d.toLocaleDateString("es", { month: "long", year: "numeric" });
+    }
+
+    function shareOf(e) {
+      if (e.type === "settle") return e.amount;
+      if (e.owed != null) return Number(e.owed);
+      return e.split === "full" ? e.amount : e.amount / 2;
+    }
+
+    /** net > 0 ⇒ B le debe a A. net < 0 ⇒ A le debe a B. */
+    function netOf(state) {
+      let net = 0;
+      for (const e of state.expenses) {
+        const share = shareOf(e);
+        if (e.type === "settle") net += e.paidBy === "a" ? share : -share;
+        else net += e.paidBy === "a" ? share : -share;
+      }
+      return Math.round(net * 100) / 100;
+    }
+
+    function toast(msg) {
+      const el = $("toast");
+      el.textContent = msg;
+      el.classList.remove("hidden");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.add("hidden"), 2200);
+    }
+
+    let state = load();
+    let ui = { sheet: null, editId: null, importOpen: false };
+    let me = localStorage.getItem(ME_KEY) || "";
+    let roomId = new URLSearchParams(location.search).get("sala") || localStorage.getItem(ROOM_KEY) || "";
+    let syncStatus = roomId ? "saving" : "off";
+    let pushTimer = null;
+    let pulling = false;
+    let pushing = false;
+
+    if (roomId) {
+      localStorage.setItem(ROOM_KEY, roomId);
+      const u = new URL(location.href);
+      u.searchParams.set("sala", roomId);
+      history.replaceState(null, "", u);
+    }
+
+    function setMe(who) {
+      me = who;
+      localStorage.setItem(ME_KEY, who);
+    }
+
+    function setRoom(id) {
+      roomId = String(id || "").trim();
+      if (!roomId) return;
+      localStorage.setItem(ROOM_KEY, roomId);
+      const u = new URL(location.href);
+      u.searchParams.set("sala", roomId);
+      history.replaceState(null, "", u);
+    }
+
+    function shareLink() {
+      const u = new URL(location.href);
+      if (roomId) u.searchParams.set("sala", roomId);
+      return u.toString();
+    }
+
+    function payload() {
+      return {
+        ready: true,
+        a: state.a,
+        b: state.b,
+        currency: state.currency,
+        expenses: state.expenses || [],
+        deleted: state.deleted || {},
+        updatedAt: state.updatedAt || Date.now(),
+      };
+    }
+
+    function blobIdFromResponse(res) {
+      const loc = res.headers.get("Location") || res.headers.get("location") || "";
+      const part = loc.split("/").filter(Boolean).pop();
+      return part || "";
+    }
+
+    async function createRoom() {
+      const res = await fetch(BLOB, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(payload()),
+      });
+      if (!res.ok) throw new Error("create " + res.status);
+      const id = blobIdFromResponse(res);
+      if (!id) throw new Error("sin id");
+      setRoom(id);
+      syncStatus = "live";
+    }
+
+    function schedulePush() {
+      if (!roomId) return;
+      clearTimeout(pushTimer);
+      pushTimer = setTimeout(pushNow, 280);
+    }
+
+    async function pushNow() {
+      if (!roomId || pushing) return;
+      pushing = true;
+      syncStatus = "saving";
+      updateSyncPill();
+      try {
+        const res = await fetch(BLOB + "/" + encodeURIComponent(roomId), {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(payload()),
+        });
+        if (!res.ok) throw new Error("put " + res.status);
+        syncStatus = "live";
+      } catch {
+        syncStatus = "err";
+      } finally {
+        pushing = false;
+        updateSyncPill();
+      }
+    }
+
+    function mergeStates(local, remote) {
+      if (!local || !local.ready) return { ...remote, ready: true };
+      const deleted = { ...(remote.deleted || {}), ...(local.deleted || {}) };
+      const map = new Map();
+      for (const e of remote.expenses || []) if (e && e.id && !deleted[e.id]) map.set(e.id, e);
+      for (const e of local.expenses || []) {
+        if (!e || !e.id || deleted[e.id]) continue;
+        const prev = map.get(e.id);
+        if (!prev || (e.updatedAt || e.ts || 0) >= (prev.updatedAt || prev.ts || 0)) map.set(e.id, e);
+      }
+      const localNewer = (local.updatedAt || 0) >= (remote.updatedAt || 0);
+      return {
+        ready: true,
+        a: localNewer ? (local.a || remote.a) : (remote.a || local.a),
+        b: localNewer ? (local.b || remote.b) : (remote.b || local.b),
+        currency: localNewer ? (local.currency || remote.currency) : (remote.currency || local.currency),
+        expenses: [...map.values()],
+        deleted,
+        updatedAt: Math.max(local.updatedAt || 0, remote.updatedAt || 0),
+      };
+    }
+
+    async function pull() {
+      if (!roomId || pulling || pushing) return;
+      pulling = true;
+      try {
+        const res = await fetch(BLOB + "/" + encodeURIComponent(roomId), {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+        });
+        if (res.status === 404) { syncStatus = "err"; return; }
+        if (!res.ok) throw new Error("get");
+        const remote = await res.json();
+        if (!remote || !Array.isArray(remote.expenses)) return;
+        const merged = mergeStates(state, remote);
+        const before = JSON.stringify({
+          a: state && state.a, b: state && state.b, c: state && state.currency,
+          e: state && state.expenses, d: state && state.deleted,
+        });
+        const after = JSON.stringify({
+          a: merged.a, b: merged.b, c: merged.currency, e: merged.expenses, d: merged.deleted,
+        });
+        if (before !== after) {
+          state = merged;
+          localSave();
+          if (!ui.sheet) render();
+        }
+        syncStatus = "live";
+      } catch {
+        if (syncStatus !== "saving") syncStatus = "err";
+      } finally {
+        pulling = false;
+        updateSyncPill();
+      }
+    }
+
+    async function ensureRoom() {
+      if (roomId) {
+        await pull();
+        return;
+      }
+      if (!state || !state.ready) return;
+      try {
+        await createRoom();
+        updateSyncPill();
+      } catch {
+        syncStatus = "err";
+        updateSyncPill();
+      }
+    }
+
+    function syncLabel() {
+      if (syncStatus === "live") return "En vivo · copiar enlace";
+      if (syncStatus === "saving") return "Guardando…";
+      if (syncStatus === "err") return "Sin nube · reintentar";
+      return "Solo este aparato";
+    }
+
+    function updateSyncPill() {
+      const el = $("syncPill");
+      if (!el) return;
+      el.className = "sync-pill " + syncStatus;
+      el.innerHTML = "<i></i>" + syncLabel();
+    }
+
+    function closeSheet() {
+      ui.sheet = null;
+      ui.editId = null;
+      ui.importOpen = false;
+      render();
+    }
+
+    function render() {
+      $("app").className = "app" + (state && state.ready ? " is-home" : "");
+      if (!state || !state.ready) {
+        $("app").innerHTML = setupHTML();
+        $("overlay").innerHTML = "";
+        bindSetup();
+        return;
+      }
+      $("app").innerHTML = homeHTML();
+      bindHome();
+      $("overlay").innerHTML = sheetHTML();
+      bindSheet();
+    }
+
+    function setupHTML() {
+      const a = state?.a || "";
+      const b = state?.b || "";
+      const currency = state?.currency || "MXN";
+      const opts = CURRENCIES.map((c) =>
+        `<option value="${c.code}" ${c.code === currency ? "selected" : ""}>${c.code} (${c.symbol})</option>`
+      ).join("");
+      return `
+        <section class="setup">
+          <div class="setup-cover" role="img" aria-label="Israel y Dario frente a la casa"></div>
+          <div>
+            <h1>El depto</h1>
+            <p class="lede">La misma sala en la lap y en el cel. Lo que apunte uno, lo ve el otro.</p>
+          </div>
+          <label class="field">
+            <span>Israel</span>
+            <input id="nameA" placeholder="Tu nombre" value="${esc(a || "Israel")}" maxlength="24" />
+          </label>
+          <label class="field">
+            <span>Dario</span>
+            <input id="nameB" placeholder="Nombre del roomie" value="${esc(b || "Dario")}" maxlength="24" />
+          </label>
+          <div class="field">
+            <span>En este aparato, ¿quién eres?</span>
+            <div class="chips">
+              <button class="chip ${me !== "b" ? "on" : ""}" data-me="a" type="button">Soy Israel</button>
+              <button class="chip ${me === "b" ? "on" : ""}" data-me="b" type="button">Soy Dario</button>
+            </div>
+          </div>
+          <label class="field">
+            <span>Moneda</span>
+            <select id="currency">${opts}</select>
+          </label>
+          <button class="btn full" id="startSeedBtn">Empezar con gastos de Splitwise</button>
+          <button class="btn ghost full" id="csvBtn">Elegir otro CSV de Splitwise</button>
+          <input id="csvFile" type="file" accept=".csv,.json,text/csv,application/json" hidden />
+          <button class="btn ghost full" id="startBtn">Empezar vacío</button>
+          ${roomId ? `<p class="hint">Vas a entrar a la sala compartida.</p>` : `<p class="hint">Al empezar se crea un enlace para los 4 aparatos (tu lap, tu cel, y los de Dario).</p>`}
+        </section>`;
+    }
+
+    function namesFromSetup() {
+      const a = $("nameA").value.trim() || "Israel";
+      const b = $("nameB").value.trim() || "Dario";
+      if (a.toLowerCase() === b.toLowerCase()) {
+        toast("Pongan nombres distintos");
+        return null;
+      }
+      return { a, b, currency: $("currency").value };
+    }
+
+    function bindSetup() {
+      for (const c of document.querySelectorAll("[data-me]")) {
+        c.onclick = () => {
+          setMe(c.dataset.me);
+          document.querySelectorAll("[data-me]").forEach((x) => x.classList.toggle("on", x === c));
+        };
+      }
+      if (!me) setMe("a");
+      $("startBtn").onclick = async () => {
+        const names = namesFromSetup();
+        if (!names) return;
+        if (!me) setMe("a");
+        state = { ready: true, ...names, expenses: (state && state.expenses) || [], deleted: (state && state.deleted) || {}, updatedAt: Date.now() };
+        save();
+        render();
+        await ensureRoom();
+        render();
+      };
+      $("startSeedBtn").onclick = async () => {
+        const names = namesFromSetup();
+        const seed = splitwiseSeed();
+        if (!names || !seed) return;
+        if (!me) setMe("a");
+        applyImportedState({ ...seed, ...names, ready: true });
+        await ensureRoom();
+        render();
+      };
+      $("csvBtn").onclick = () => $("csvFile").click();
+      $("csvFile").onchange = (ev) => importFromFile(ev.target.files[0], namesFromSetup());
+    }
+
+    function homeHTML() {
+      const net = netOf(state);
+      const even = Math.abs(net) < 0.005;
+      let label, amount, sub, heroClass;
+      if (even) {
+        label = "Balance";
+        amount = "A mano";
+        sub = `${state.a} y ${state.b} no se deben nada`;
+        heroClass = "hero even";
+      } else if (net > 0) {
+        amount = money(net, state);
+        heroClass = "hero";
+        if (me === "b") {
+          label = `Le debes a ${state.a}`;
+          sub = `${state.b} le debe a ${state.a}`;
+        } else {
+          label = `${state.b} te debe`;
+          sub = `${state.b} le debe a ${state.a}`;
+        }
+      } else {
+        amount = money(Math.abs(net), state);
+        heroClass = "hero";
+        if (me === "b") {
+          label = `${state.a} te debe`;
+          sub = `${state.a} le debe a ${state.b}`;
+        } else {
+          label = `Le debes a ${state.b}`;
+          sub = `${state.a} le debe a ${state.b}`;
+        }
+      }
+
+      const items = [...state.expenses].sort((x, y) => y.ts - x.ts);
+      let list = "";
+      if (!items.length) {
+        list = `<div class="empty">
+            <strong>Todavía no hay gastos</strong>
+            Puedes cargar los de Splitwise desde ⚙ o tocar “Agregar gasto”.
+            <div style="margin-top:14px"><button class="btn" id="emptySeedBtn">Cargar Splitwise</button></div>
+          </div>`;
+      } else {
+        let last = "";
+        for (const e of items) {
+          const mk = monthKey(e.ts);
+          if (mk !== last) {
+            list += `<div class="group-title">${monthLabel(mk)}</div>`;
+            last = mk;
+          }
+          const who = e.paidBy === "a" ? state.a : state.b;
+          const other = e.paidBy === "a" ? state.b : state.a;
+          const isSettle = e.type === "settle";
+          const title = isSettle ? (e.desc || "Saldaron") : (e.desc || "Gasto");
+          const meta = isSettle
+            ? `${who} le pagó a ${other} · ${when(e.ts)}`
+            : `Pagó ${who}${e.split === "full" ? ` · lo debe ${other}` : " · a la mitad"} · ${when(e.ts)}`;
+          const share = isSettle
+            ? "pago"
+            : e.split === "full"
+              ? `${other} ${money(e.amount, state)}`
+              : `c/u ${money(shareOf(e), state)}`;
+          list += `
+            <button class="item" data-id="${e.id}">
+              <div class="dot ${isSettle ? "settle" : ""}">${iconFor(e.desc, e.type)}</div>
+              <div>
+                <b>${esc(title)}</b>
+                <div class="meta">${esc(meta)}</div>
+              </div>
+              <div>
+                <div class="cash">${money(e.amount, state)}</div>
+                <span class="share">${esc(share)}</span>
+              </div>
+            </button>`;
+        }
+      }
+
+      return `
+        <header class="cover">
+          <img src="cover.jpg" alt="Israel y Dario frente a la casa" />
+          <div class="cover-fade"></div>
+          <button class="cover-gear" id="settingsBtn" title="Ajustes" aria-label="Ajustes">⚙</button>
+          <div class="cover-meta">
+            <div class="cover-avatars">
+              <div class="av a" title="${esc(state.a)}"></div>
+              <div class="av b" title="${esc(state.b)}"></div>
+            </div>
+            <h1>El depto</h1>
+            <p>${esc(state.a)} · ${esc(state.b)}</p>
+            <button class="sync-pill ${syncStatus}" id="syncPill" type="button"><i></i>${syncLabel()}</button>
+          </div>
+        </header>
+        <div class="home-grid">
+          <aside>
+            <section class="${heroClass}">
+              <div class="label">${esc(label)}</div>
+              <div class="amount">${esc(amount)}</div>
+              <div class="sub">${esc(sub)}</div>
+              <div class="hero-actions">
+                <button class="btn" id="settleBtn" ${even ? "disabled style='opacity:.45'" : ""}>Saldar</button>
+                <button class="btn" id="shareBtn">Copiar resumen</button>
+              </div>
+            </section>
+            <div class="fab">
+              <button class="btn full" id="addBtn">＋  Agregar gasto</button>
+            </div>
+          </aside>
+          <div>
+            <div class="month-bar">
+              <span>${items.length} movimiento${items.length === 1 ? "" : "s"}</span>
+              <span>${state.currency}</span>
+            </div>
+            <div class="list">${list}</div>
+          </div>
+        </div>`;
+    }
+
+    function bindHome() {
+      $("addBtn").onclick = () => { ui.sheet = "add"; ui.editId = null; render(); };
+      $("settingsBtn").onclick = () => { ui.sheet = "settings"; render(); };
+      const pill = $("syncPill");
+      if (pill) {
+        pill.onclick = async () => {
+          if (syncStatus === "err" || !roomId) {
+            await ensureRoom();
+            render();
+            return;
+          }
+          copyText(shareLink());
+          toast("Enlace copiado. Mándaselo a Dario y ábrelo en tu cel");
+        };
+      }
+      $("settleBtn").onclick = () => {
+        if (Math.abs(netOf(state)) < 0.005) return;
+        ui.sheet = "settle";
+        render();
+      };
+      $("shareBtn").onclick = copySummary;
+      const emptySeed = $("emptySeedBtn");
+      if (emptySeed) {
+        emptySeed.onclick = () => {
+          const seed = splitwiseSeed();
+          if (!seed) return;
+          applyImportedState({
+            ...seed,
+            a: state.a,
+            b: state.b,
+            currency: state.currency,
+            ready: true,
+          });
+        };
+      }
+      for (const btn of document.querySelectorAll(".item")) {
+        btn.onclick = () => {
+          ui.sheet = "detail";
+          ui.editId = btn.dataset.id;
+          render();
+        };
+      }
+    }
+
+    function sheetHTML() {
+      if (!ui.sheet) return "";
+      if (ui.sheet === "add") return addSheet();
+      if (ui.sheet === "settle") return settleSheet();
+      if (ui.sheet === "detail") return detailSheet();
+      if (ui.sheet === "settings") return settingsSheet();
+      return "";
+    }
+
+    function addSheet() {
+      const edit = ui.editId ? state.expenses.find((e) => e.id === ui.editId) : null;
+      const paid = edit?.paidBy || "a";
+      const split = edit?.split || "half";
+      const amount = edit ? String(edit.amount) : "";
+      const desc = edit?.desc || "";
+      return `
+        <div class="overlay" id="backdrop">
+          <div class="sheet" onclick="event.stopPropagation()">
+            <div class="grab"></div>
+            <h2>${edit ? "Editar gasto" : "Nuevo gasto"}</h2>
+            <div class="stack">
+              <div class="amount-box">
+                <input id="amt" inputmode="decimal" placeholder="0" value="${esc(amount)}" />
+              </div>
+              <label class="field">
+                <span>¿Qué fue?</span>
+                <input id="desc" placeholder="Súper, luz, Uber…" value="${esc(desc)}" maxlength="60" />
+              </label>
+              <div class="field">
+                <span>¿Quién pagó?</span>
+                <div class="chips">
+                  <button class="chip ${paid === "a" ? "on" : ""}" data-paid="a">${esc(state.a)}</button>
+                  <button class="chip ${paid === "b" ? "on" : ""}" data-paid="b">${esc(state.b)}</button>
+                </div>
+              </div>
+              <div class="field">
+                <span>¿Cómo se divide?</span>
+                <div class="chips">
+                  <button class="chip ${split === "half" ? "on" : ""}" data-split="half">A la mitad</button>
+                  <button class="chip ${split === "full" ? "on" : ""}" data-split="full">Lo debe el otro</button>
+                </div>
+              </div>
+              <p class="hint" id="splitHint"></p>
+              <button class="btn full" id="saveExp">${edit ? "Guardar cambios" : "Agregar"}</button>
+              <button class="btn ghost full" id="cancelSheet">Cancelar</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function settleSheet() {
+      const net = netOf(state);
+      const debtor = net > 0 ? "b" : "a";
+      const creditor = net > 0 ? "a" : "b";
+      const debtorName = state[debtor];
+      const creditorName = state[creditor];
+      const due = Math.abs(net);
+      return `
+        <div class="overlay" id="backdrop">
+          <div class="sheet" onclick="event.stopPropagation()">
+            <div class="grab"></div>
+            <h2>Saldar</h2>
+            <div class="stack">
+              <p class="hint">${esc(debtorName)} le debe ${money(due, state)} a ${esc(creditorName)}. Si ya se pagaron, anótenlo aquí y quedan a mano.</p>
+              <div class="amount-box">
+                <input id="settleAmt" inputmode="decimal" value="${due}" />
+              </div>
+              <p class="hint">Quien paga: <b>${esc(debtorName)}</b> → ${esc(creditorName)}</p>
+              <button class="btn full" id="saveSettle">Registrar pago</button>
+              <button class="btn ghost full" id="cancelSheet">Cancelar</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function detailSheet() {
+      const e = state.expenses.find((x) => x.id === ui.editId);
+      if (!e) return "";
+      const who = e.paidBy === "a" ? state.a : state.b;
+      const other = e.paidBy === "a" ? state.b : state.a;
+      return `
+        <div class="overlay" id="backdrop">
+          <div class="sheet" onclick="event.stopPropagation()">
+            <div class="grab"></div>
+            <h2>${e.type === "settle" ? "Pago" : esc(e.desc || "Gasto")}</h2>
+            <div class="stack">
+              <p class="hint">
+                ${money(e.amount, state)} · ${e.type === "settle"
+                  ? `${esc(who)} le pagó a ${esc(other)}`
+                  : `pagó ${esc(who)}${e.split === "full" ? `, lo debe ${esc(other)}` : ", a la mitad"}`}
+                <br/>${new Date(e.ts).toLocaleString("es")}
+              </p>
+              ${e.type === "expense" ? `<button class="btn full" id="editExp">Editar</button>` : ""}
+              <button class="btn danger full" id="delExp">Borrar</button>
+              <button class="btn ghost full" id="cancelSheet">Cerrar</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function settingsSheet() {
+      const opts = CURRENCIES.map((c) =>
+        `<option value="${c.code}" ${c.code === state.currency ? "selected" : ""}>${c.code}</option>`
+      ).join("");
+      return `
+        <div class="overlay" id="backdrop">
+          <div class="sheet settings" onclick="event.stopPropagation()">
+            <div class="grab"></div>
+            <h2>Ajustes</h2>
+            <div class="stack">
+              <div class="row-2">
+                <label class="field"><span>Tú</span><input id="setA" value="${esc(state.a)}" maxlength="24" /></label>
+                <label class="field"><span>Roomie</span><input id="setB" value="${esc(state.b)}" maxlength="24" /></label>
+              </div>
+              <label class="field"><span>Moneda</span><select id="setCur">${opts}</select></label>
+              <div class="field">
+                <span>En este aparato, ¿quién eres?</span>
+                <div class="chips">
+                  <button class="chip ${me !== "b" ? "on" : ""}" data-me="a" type="button">${esc(state.a)}</button>
+                  <button class="chip ${me === "b" ? "on" : ""}" data-me="b" type="button">${esc(state.b)}</button>
+                </div>
+              </div>
+              <p class="hint">${roomId ? "Sala compartida activa. El mismo enlace sirve en lap y cel." : "Todavía no hay sala en la nube."}</p>
+              <button class="btn full" id="copyLinkBtn">Copiar enlace de la sala</button>
+              <button class="btn ghost full" id="retrySyncBtn">Sincronizar ahora</button>
+              <button class="btn full" id="saveSet">Guardar nombres</button>
+              <button class="btn ghost full" id="loadSeedBtn">Cargar gastos de Splitwise</button>
+              <button class="btn ghost full" id="csvBtn">Importar CSV de Splitwise</button>
+              <input id="csvFile" type="file" accept=".csv,.json,text/csv,application/json" hidden />
+              <button class="btn ghost full" id="exportBtn">Copiar respaldo</button>
+              <button class="btn ghost full" id="importBtn">Pegar respaldo</button>
+              ${ui.importOpen ? `<textarea id="importBox" placeholder="Pega aquí el respaldo"></textarea>
+                <button class="btn full" id="doImport">Importar</button>` : ""}
+              <div class="danger-zone">
+                <p class="hint">Borrar todo deja la app como nueva. No se puede deshacer.</p>
+                <button class="btn danger full" id="wipeBtn">Borrar todo</button>
+              </div>
+              <button class="btn ghost full" id="cancelSheet">Cerrar</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function bindSheet() {
+      const backdrop = $("backdrop");
+      if (!backdrop) return;
+      backdrop.onclick = closeSheet;
+      const cancel = $("cancelSheet");
+      if (cancel) cancel.onclick = closeSheet;
+
+      if (ui.sheet === "add") {
+        let paid = (ui.editId && state.expenses.find((e) => e.id === ui.editId)?.paidBy) || "a";
+        let split = (ui.editId && state.expenses.find((e) => e.id === ui.editId)?.split) || "half";
+        const hint = () => {
+          const n = parseAmount($("amt").value);
+          const who = paid === "a" ? state.a : state.b;
+          const other = paid === "a" ? state.b : state.a;
+          if (!Number.isFinite(n) || n <= 0) {
+            $("splitHint").textContent = split === "half"
+              ? `Se parte en dos. ${other} le queda debiendo la mitad a ${who}.`
+              : `${other} le debe el total a ${who}.`;
+            return;
+          }
+          $("splitHint").textContent = split === "half"
+            ? `${other} le queda debiendo ${money(n / 2, state)} a ${who}.`
+            : `${other} le queda debiendo ${money(n, state)} a ${who}.`;
+        };
+        hint();
+        $("amt").addEventListener("input", hint);
+        for (const c of document.querySelectorAll("[data-paid]")) {
+          c.onclick = () => {
+            paid = c.dataset.paid;
+            document.querySelectorAll("[data-paid]").forEach((x) => x.classList.toggle("on", x === c));
+            hint();
+          };
+        }
+        for (const c of document.querySelectorAll("[data-split]")) {
+          c.onclick = () => {
+            split = c.dataset.split;
+            document.querySelectorAll("[data-split]").forEach((x) => x.classList.toggle("on", x === c));
+            hint();
+          };
+        }
+        $("saveExp").onclick = () => {
+          const amount = parseAmount($("amt").value);
+          const desc = $("desc").value.trim();
+          if (!Number.isFinite(amount) || amount <= 0) { toast("Pon un monto válido"); return; }
+          if (ui.editId) {
+            const e = state.expenses.find((x) => x.id === ui.editId);
+            if (e) Object.assign(e, { amount, desc, paidBy: paid, split, updatedAt: Date.now() });
+          } else {
+            state.expenses.push({
+              id: uid(), type: "expense", amount, desc, paidBy: paid, split, ts: Date.now(), updatedAt: Date.now(),
+            });
+          }
+          save();
+          closeSheet();
+          toast("Listo");
+        };
+        setTimeout(() => $("amt").focus(), 50);
+      }
+
+      if (ui.sheet === "settle") {
+        $("saveSettle").onclick = () => {
+          const amount = parseAmount($("settleAmt").value);
+          if (!Number.isFinite(amount) || amount <= 0) { toast("Pon un monto válido"); return; }
+          const net = netOf(state);
+          const payer = net > 0 ? "b" : "a";
+          state.expenses.push({
+            id: uid(), type: "settle", amount, desc: "Saldaron", paidBy: payer, split: "full", ts: Date.now(), updatedAt: Date.now(),
+          });
+          save();
+          closeSheet();
+          toast("Quedó registrado");
+        };
+      }
+
+      if (ui.sheet === "detail") {
+        const edit = $("editExp");
+        if (edit) edit.onclick = () => { ui.sheet = "add"; render(); };
+        $("delExp").onclick = () => {
+          state.deleted = state.deleted || {};
+          state.deleted[ui.editId] = Date.now();
+          state.expenses = state.expenses.filter((x) => x.id !== ui.editId);
+          save();
+          closeSheet();
+          toast("Borrado");
+        };
+      }
+
+      if (ui.sheet === "settings") {
+        for (const c of document.querySelectorAll("[data-me]")) {
+          c.onclick = () => {
+            setMe(c.dataset.me);
+            document.querySelectorAll("[data-me]").forEach((x) => x.classList.toggle("on", x === c));
+          };
+        }
+        $("copyLinkBtn").onclick = async () => {
+          if (!roomId) await ensureRoom();
+          if (!roomId) { toast("No se pudo crear la sala. Revisa internet"); return; }
+          copyText(shareLink());
+          toast("Enlace copiado");
+        };
+        $("retrySyncBtn").onclick = async () => {
+          await ensureRoom();
+          await pushNow();
+          toast(syncStatus === "live" ? "Al día" : "No se pudo sincronizar");
+        };
+        $("saveSet").onclick = () => {
+          const a = $("setA").value.trim();
+          const b = $("setB").value.trim();
+          if (!a || !b) { toast("Faltan nombres"); return; }
+          state.a = a; state.b = b; state.currency = $("setCur").value;
+          save();
+          closeSheet();
+          toast("Guardado");
+        };
+        $("loadSeedBtn").onclick = () => {
+          const seed = splitwiseSeed();
+          if (!seed) return;
+          if (state.expenses.length && !confirm("Esto reemplaza los gastos actuales por los de Splitwise.")) return;
+          applyImportedState({
+            ...seed,
+            a: state.a,
+            b: state.b,
+            currency: state.currency,
+            ready: true,
+          });
+        };
+        $("csvBtn").onclick = () => $("csvFile").click();
+        $("csvFile").onchange = (ev) => importFromFile(ev.target.files[0], { a: state.a, b: state.b, currency: state.currency });
+        $("exportBtn").onclick = () => {
+          copyText(JSON.stringify(state));
+          toast("Respaldo copiado");
+        };
+        $("importBtn").onclick = () => { ui.importOpen = true; render(); };
+        const doImp = $("doImport");
+        if (doImp) {
+          doImp.onclick = () => {
+            try {
+              const data = JSON.parse($("importBox").value);
+              if (!data || !data.a || !data.b || !Array.isArray(data.expenses)) throw new Error("bad");
+              data.ready = true;
+              data.updatedAt = Date.now();
+              state = data;
+              save();
+              closeSheet();
+              toast("Importado");
+            } catch {
+              toast("Ese respaldo no sirve");
+            }
+          };
+        }
+        $("wipeBtn").onclick = () => {
+          if (!confirm("¿Borrar todos los gastos?")) return;
+          state = null;
+          localStorage.removeItem(KEY);
+          closeSheet();
+        };
+      }
+    }
+
+    function splitwiseSeed() {
+      if (typeof SPLITWISE_SEED === "undefined") {
+        toast("No está el archivo splitwise-data.js");
+        return null;
+      }
+      return SPLITWISE_SEED;
+    }
+
+    function applyImportedState(data) {
+      if (!data || !Array.isArray(data.expenses)) {
+        toast("No se pudo importar");
+        return;
+      }
+      state = {
+        ready: true,
+        a: data.a || "Israel",
+        b: data.b || "Dario",
+        currency: data.currency || "MXN",
+        expenses: data.expenses,
+        deleted: data.deleted || {},
+        updatedAt: Date.now(),
+      };
+      save();
+      closeSheet();
+      toast(data.expenses.length + " movimientos listos");
+    }
+
+    function importFromFile(file, names) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const text = String(reader.result || "");
+          const name = (file.name || "").toLowerCase();
+          let data;
+          if (name.endsWith(".json") || text.trim().startsWith("{")) {
+            data = JSON.parse(text);
+          } else {
+            data = splitwiseCsvToState(text, names);
+          }
+          if (names) {
+            data.a = names.a || data.a;
+            data.b = names.b || data.b;
+            data.currency = names.currency || data.currency;
+          }
+          applyImportedState(data);
+        } catch (err) {
+          toast("Ese archivo no se pudo leer");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function parseCsv(text) {
+      const rows = [];
+      let row = [], cell = "", i = 0, quoted = false;
+      text = String(text).replace(/^\uFEFF/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      while (i < text.length) {
+        const ch = text[i];
+        if (quoted) {
+          if (ch === '"') {
+            if (text[i + 1] === '"') { cell += '"'; i += 2; continue; }
+            quoted = false; i++; continue;
+          }
+          cell += ch; i++; continue;
+        }
+        if (ch === '"') { quoted = true; i++; continue; }
+        if (ch === ",") { row.push(cell); cell = ""; i++; continue; }
+        if (ch === "\n") { row.push(cell); rows.push(row); row = []; cell = ""; i++; continue; }
+        cell += ch; i++;
+      }
+      if (cell.length || row.length) { row.push(cell); rows.push(row); }
+      return rows.filter((r) => r.some((c) => String(c).trim()));
+    }
+
+    function csvNum(s) {
+      const n = parseAmount(s);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    function splitwiseCsvToState(text, names) {
+      const rows = parseCsv(text);
+      if (rows.length < 2) throw new Error("csv vacío");
+      const header = rows[0].map((h) => h.trim());
+      const idx = {
+        fecha: header.findIndex((h) => /fecha|date/i.test(h)),
+        desc: header.findIndex((h) => /desc/i.test(h)),
+        cat: header.findIndex((h) => /categor/i.test(h)),
+        coste: header.findIndex((h) => /coste|cost|total/i.test(h)),
+        moneda: header.findIndex((h) => /moneda|currency/i.test(h)),
+      };
+      const skip = new Set(Object.values(idx));
+      const people = header
+        .map((name, i) => ({ name, i }))
+        .filter((p) => p.name && !skip.has(p.i) && !/^moneda$|^currency$/i.test(p.name));
+      if (people.length < 2) throw new Error("faltan personas");
+      const pa = people[0];
+      const pb = people[1];
+      const expenses = [];
+      for (const r of rows.slice(1)) {
+        const desc = (r[idx.desc] || "").trim();
+        const cat = (idx.cat >= 0 ? r[idx.cat] : "") || "";
+        const cost = csvNum(r[idx.coste]);
+        const israel = csvNum(r[pa.i]);
+        const dario = csvNum(r[pb.i]);
+        const fecha = (r[idx.fecha] || "").trim();
+        if (!fecha || /saldo total|total balance/i.test(desc) || cost == null) continue;
+        const paid = (israel || 0) >= 0 ? "a" : "b";
+        const owed = (israel || 0) >= 0 ? Math.abs(dario || 0) : Math.abs(israel || 0);
+        const isPay = /pago/i.test(cat) || /pag[oó]/i.test(desc);
+        let split = "half";
+        if (Math.abs(owed - cost) < 0.02) split = "full";
+        const ts = Date.parse(fecha.length === 10 ? fecha + "T12:00:00" : fecha);
+        const item = {
+          id: "sw-" + fecha + "-" + String(expenses.length + 1).padStart(2, "0"),
+          type: isPay ? "settle" : "expense",
+          amount: Math.round(cost * 100) / 100,
+          desc: desc || (isPay ? "Pago" : "Gasto"),
+          paidBy: paid,
+          split: isPay ? "full" : split,
+          ts: Number.isFinite(ts) ? ts : Date.now(),
+        };
+        const expected = item.split === "full" || isPay ? cost : cost / 2;
+        if (Math.abs(owed - expected) >= 0.005) item.owed = Math.round(owed * 100) / 100;
+        expenses.push(item);
+      }
+      return {
+        ready: true,
+        a: (names && names.a) || pa.name.replace(/\s+Ventura$/i, "") || "Israel",
+        b: (names && names.b) || pb.name || "Dario",
+        currency: (idx.moneda >= 0 && (rows[1][idx.moneda] || "").trim()) || (names && names.currency) || "MXN",
+        expenses,
+      };
+    }
+
+    function copySummary() {
+      const net = netOf(state);
+      const lines = [
+        `Cuentas · ${state.a} y ${state.b}`,
+        Math.abs(net) < 0.005
+          ? "Están a mano."
+          : net > 0
+            ? `${state.b} le debe ${money(net, state)} a ${state.a}`
+            : `${state.a} le debe ${money(Math.abs(net), state)} a ${state.b}`,
+        "",
+      ];
+      const last = [...state.expenses].sort((x, y) => y.ts - x.ts).slice(0, 12);
+      if (last.length) {
+        lines.push("Últimos movimientos:");
+        for (const e of last) {
+          const who = e.paidBy === "a" ? state.a : state.b;
+          const tag = e.type === "settle" ? "pago" : (e.desc || "gasto");
+          lines.push(`• ${tag} ${money(e.amount, state)} (pagó ${who})`);
+        }
+      }
+      copyText(lines.join("\n"));
+      toast("Resumen copiado");
+    }
+
+    function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+      } else fallbackCopy(text);
+    }
+    function fallbackCopy(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch {}
+      ta.remove();
+    }
+
+    function esc(s) {
+      return String(s ?? "")
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+    function ini(name) {
+      const p = String(name || "?").trim();
+      return esc((p[0] || "?").toUpperCase());
+    }
+
+    async function boot() {
+      if (roomId) {
+        await pull();
+        if (state && Array.isArray(state.expenses) && !state.ready) state.ready = true;
+      }
+      render();
+      if (state && state.ready) await ensureRoom();
+      setInterval(() => {
+        if (document.visibilityState === "visible") pull();
+      }, 4000);
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") pull();
+      });
+    }
+    boot();
+  </script>
+</body>
+</html>

@@ -214,8 +214,12 @@
     }
     .eyebrow.small { font-size: 10px; }
     .section-heading h2 { letter-spacing: -.04em; margin: 11px 0 0; font-size: 39px; }
+    .heading-actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .add {
       background: var(--ink); color: #fff; padding: 15px 19px; font-weight: 700;
+    }
+    .add.ghost {
+      background: #fff; color: var(--ink); border: 1px solid var(--ink);
     }
     .month-group { margin-bottom: 38px; }
     .month-divider {
@@ -338,8 +342,9 @@
       .expenses { padding: 55px 20px 75px; }
       .section-heading { align-items: flex-start; gap: 20px; }
       .section-heading h2 { font-size: 31px; }
-      .add { padding: 12px; font-size: 0; }
-      .add:after { content: "＋"; font-size: 22px; }
+      .add { padding: 12px 14px; font-size: 13px; }
+      .add.icon-only { font-size: 0; padding: 12px; }
+      .add.icon-only:after { content: "＋"; font-size: 22px; }
       .expense-row { grid-template-columns: 44px minmax(0, 1fr) minmax(88px, 110px); gap: 10px; }
       .paid { display: none; }
       .expense-amount strong { font-size: 14px; }
@@ -989,7 +994,10 @@
               <span class="eyebrow small"><i></i> MOVIMIENTOS</span>
               <h2>Gastos recientes</h2>
             </div>
-            <button class="add" id="addBtn" type="button">＋ Agregar gasto</button>
+            <div class="heading-actions">
+              <button class="add" id="addBtn" type="button">＋ Gasto</button>
+              <button class="add ghost" id="abonoBtn" type="button">💵 Abono</button>
+            </div>
           </div>
           <div class="expense-list">${list}</div>
         </section>
@@ -1002,6 +1010,7 @@
 
     function bindHome() {
       $("addBtn").onclick = () => { ui.sheet = "add"; ui.editId = null; render(); };
+      $("abonoBtn").onclick = () => { ui.sheet = "settle"; ui.editId = null; render(); };
       $("settingsBtn").onclick = () => { ui.sheet = "settings"; render(); };
       const pill = $("syncPill");
       if (pill) {
@@ -1035,7 +1044,7 @@
           });
         };
       }
-      for (const btn of document.querySelectorAll(".item")) {
+      for (const btn of document.querySelectorAll(".expense-row")) {
         btn.onclick = () => {
           ui.sheet = "detail";
           ui.editId = btn.dataset.id;
@@ -1106,24 +1115,29 @@
     }
 
     function settleSheet() {
+      const edit = ui.editId ? state.expenses.find((e) => e.id === ui.editId) : null;
       const net = netOf(state);
-      const debtor = net > 0 ? "b" : "a";
-      const creditor = net > 0 ? "a" : "b";
-      const debtorName = state[debtor];
-      const creditorName = state[creditor];
-      const due = Math.abs(net);
+      const defaultPayer = edit ? edit.paidBy : (Math.abs(net) < 0.005 ? "b" : (net > 0 ? "b" : "a"));
+      const due = edit ? edit.amount : (Math.abs(net) < 0.005 ? "" : Math.abs(net));
       return `
         <div class="overlay" id="backdrop">
           <div class="sheet" onclick="event.stopPropagation()">
             <div class="grab"></div>
-            <h2>Saldar</h2>
+            <h2>${edit ? "Editar abono" : "Abono"}</h2>
             <div class="stack">
-              <p class="hint">${esc(debtorName)} le debe ${money(due, state)} a ${esc(creditorName)}. Si ya se pagaron, anótenlo aquí y quedan a mano.</p>
+              <p class="hint">Esto no es un gasto y <b>no se divide</b>. Es dinero que uno le da al otro para bajar (o voltear) la cuenta. A veces debe Dario, a veces debes tú.</p>
               <div class="amount-box">
-                <input id="settleAmt" inputmode="decimal" value="${due}" />
+                <input id="settleAmt" inputmode="decimal" placeholder="0" value="${esc(due)}" />
               </div>
-              <p class="hint">Quien paga: <b>${esc(debtorName)}</b> → ${esc(creditorName)}</p>
-              <button class="btn full" id="saveSettle">Registrar pago</button>
+              <div class="field">
+                <span>¿Quién está abonando?</span>
+                <div class="chips">
+                  <button class="chip ${defaultPayer === "a" ? "on" : ""}" data-payer="a" type="button">${esc(state.a)}</button>
+                  <button class="chip ${defaultPayer === "b" ? "on" : ""}" data-payer="b" type="button">${esc(state.b)}</button>
+                </div>
+              </div>
+              <p class="hint" id="abonoHint"></p>
+              <button class="btn full" id="saveSettle">${edit ? "Guardar abono" : "Registrar abono"}</button>
               <button class="btn ghost full" id="cancelSheet">Cancelar</button>
             </div>
           </div>
@@ -1150,7 +1164,7 @@
               <div class="receipt ${e.photoId || e.photoThumb ? "" : "hidden"}" id="receiptBox">
                 <img id="receiptImg" alt="Ticket" ${e.photoThumb ? `src="${e.photoThumb}"` : ""} />
               </div>
-              ${e.type === "expense" ? `<button class="btn full" id="editExp">Editar</button>` : ""}
+              <button class="btn full" id="editExp">Editar</button>
               <button class="btn danger full" id="delExp">Borrar</button>
               <button class="btn ghost full" id="cancelSheet">Cerrar</button>
             </div>
@@ -1307,18 +1321,59 @@
       }
 
       if (ui.sheet === "settle") {
+        const edit = ui.editId ? state.expenses.find((e) => e.id === ui.editId) : null;
+        let payer = edit ? edit.paidBy : (document.querySelector("[data-payer].on")?.dataset.payer || "b");
+        const hint = () => {
+          const n = parseAmount($("settleAmt").value);
+          const who = payer === "a" ? state.a : state.b;
+          const other = payer === "a" ? state.b : state.a;
+          const el = $("abonoHint");
+          if (!el) return;
+          if (!Number.isFinite(n) || n <= 0) {
+            el.textContent = `${who} le da dinero a ${other}. No se parte. Baja lo que ${who} debe, o si no debía, ahora ${other} le queda debiendo.`;
+            return;
+          }
+          el.textContent = `${who} le abona ${money(n, state)} a ${other}. No es un gasto.`;
+        };
+        hint();
+        $("settleAmt").addEventListener("input", hint);
+        for (const c of document.querySelectorAll("[data-payer]")) {
+          c.onclick = () => {
+            payer = c.dataset.payer;
+            document.querySelectorAll("[data-payer]").forEach((x) => x.classList.toggle("on", x === c));
+            hint();
+          };
+        }
         $("saveSettle").onclick = () => {
           const amount = parseAmount($("settleAmt").value);
           if (!Number.isFinite(amount) || amount <= 0) { toast("Pon un monto válido"); return; }
-          const net = netOf(state);
-          const payer = net > 0 ? "b" : "a";
-          state.expenses.push({
-            id: uid(), type: "settle", amount, desc: "Saldaron", paidBy: payer, split: "full", ts: Date.now(), updatedAt: Date.now(),
-          });
+          const who = payer === "a" ? state.a : state.b;
+          if (edit) {
+            Object.assign(edit, {
+              type: "settle",
+              amount,
+              desc: "Pago " + who,
+              paidBy: payer,
+              split: "full",
+              updatedAt: Date.now(),
+            });
+          } else {
+            state.expenses.push({
+              id: uid(),
+              type: "settle",
+              amount,
+              desc: "Pago " + who,
+              paidBy: payer,
+              split: "full",
+              ts: Date.now(),
+              updatedAt: Date.now(),
+            });
+          }
           save();
           closeSheet();
-          toast("Quedó registrado");
+          toast("Abono listo");
         };
+        setTimeout(() => $("settleAmt").focus(), 50);
       }
 
       if (ui.sheet === "detail") {
@@ -1331,7 +1386,12 @@
           });
         }
         const edit = $("editExp");
-        if (edit) edit.onclick = () => { ui.sheet = "add"; render(); };
+        if (edit) {
+          edit.onclick = () => {
+            ui.sheet = current && current.type === "settle" ? "settle" : "add";
+            render();
+          };
+        }
         $("delExp").onclick = () => {
           state.deleted = state.deleted || {};
           state.deleted[ui.editId] = Date.now();

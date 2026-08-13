@@ -382,6 +382,7 @@
     const ME_KEY = "cuentas-roomie-me";
     const BLOB = "https://jsonblob.com/api/jsonBlob";
     const GH_RAW = "https://raw.githubusercontent.com/israelventura104-afk/el-depto/main";
+    const GH_API = "https://api.github.com/repos/israelventura104-afk/el-depto/contents";
     const $ = (id) => document.getElementById(id);
 
     const ICONS = {
@@ -585,11 +586,18 @@
       });
     }
 
+    async function fetchGithubFile(path) {
+      const r = await fetch(GH_API + "/" + path + "?ref=main&t=" + Date.now(), {
+        headers: { Accept: "application/vnd.github.raw+json" },
+        cache: "no-store",
+      });
+      if (!r.ok) throw new Error("gh " + r.status);
+      return r.json();
+    }
+
     async function discoverApi() {
       try {
-        const r = await fetch(GH_RAW + "/tunnel.json?t=" + Date.now(), { cache: "no-store" });
-        if (!r.ok) return null;
-        const t = await r.json();
+        const t = await fetchGithubFile("tunnel.json");
         if (!t || !t.url) return null;
         const health = await fetch(String(t.url).replace(/\/$/, "") + "/health", { cache: "no-store" });
         if (!health.ok) return null;
@@ -704,8 +712,7 @@
           if (res.ok) remote = await res.json();
           syncStatus = "live";
         } else {
-          const res = await fetch(GH_RAW + "/data.json?t=" + Date.now(), { cache: "no-store" });
-          if (res.ok) remote = await res.json();
+          try { remote = await fetchGithubFile("data.json"); } catch { remote = null; }
           syncStatus = remote ? "readonly" : "err";
         }
         if (!remote || !Array.isArray(remote.expenses)) return;

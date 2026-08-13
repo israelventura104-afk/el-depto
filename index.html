@@ -230,9 +230,10 @@
     .expense-row {
       border-bottom: 1px solid var(--line);
       display: grid;
-      grid-template-columns: 50px 1fr 130px 130px;
+      grid-template-columns: 50px minmax(0, 1fr) 130px minmax(120px, 140px);
       align-items: center; gap: 20px; padding: 22px 0;
       width: 100%; text-align: left; background: none;
+      white-space: normal;
     }
     .category-icon, .dot {
       background: var(--cream); border: 1px solid #d7cab4; border-radius: 50%;
@@ -240,11 +241,13 @@
       display: grid; place-items: center;
     }
     .dot.pic { background-size: cover; background-position: center; font-size: 0; border: 0; }
-    .expense-main, .paid, .expense-amount { display: flex; flex-direction: column; gap: 5px; }
-    .expense-main strong { font-size: 17px; }
+    .expense-main, .paid, .expense-amount { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+    .expense-main strong {
+      font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
     .expense-main span, .expense-amount span { color: #737970; font-size: 12px; }
     .paid span { font: 700 9px var(--mono); letter-spacing: .12em; color: #81867f; }
-    .expense-amount { text-align: right; }
+    .expense-amount { text-align: right; font-variant-numeric: tabular-nums; }
     .site-foot {
       border-top: 1px solid var(--line);
       display: flex; justify-content: space-between; align-items: center;
@@ -315,7 +318,7 @@
       .section-heading h2 { font-size: 31px; }
       .add { padding: 12px; font-size: 0; }
       .add:after { content: "＋"; font-size: 22px; }
-      .expense-row { grid-template-columns: 44px 1fr 100px; gap: 10px; }
+      .expense-row { grid-template-columns: 44px minmax(0, 1fr) minmax(88px, 110px); gap: 10px; }
       .paid { display: none; }
       .expense-amount strong { font-size: 14px; }
       .site-foot { flex-direction: column; align-items: flex-start; gap: 10px; padding: 32px 20px; }
@@ -886,10 +889,10 @@
           const who = e.paidBy === "a" ? state.a : state.b;
           const other = e.paidBy === "a" ? state.b : state.a;
           const isSettle = e.type === "settle";
-          const title = isSettle ? (e.desc || "Saldaron") : (e.desc || "Gasto");
-          const splitTxt = isSettle ? "pago" : (e.split === "full" ? `solo ${other}` : "mitad");
+          const title = isSettle ? "Pago" : (e.desc || "Gasto");
+          const splitTxt = isSettle ? `solo ${other}` : (e.split === "full" ? `solo ${other}` : "mitad");
           const share = isSettle
-            ? "pago"
+            ? `Lo debe ${other}`
             : e.split === "full"
               ? `Lo debe ${other}`
               : `c/u ${money(shareOf(e), state)}`;

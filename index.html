@@ -30,7 +30,7 @@
       --card: #fff8e9;
       --safe-b: env(safe-area-inset-bottom, 0px);
       --safe-t: env(safe-area-inset-top, 0px);
-      --cover: url("cover.jpg?v=2");
+      --cover: url("cover.jpg?v=3");
       --mono: "IBM Plex Mono", ui-monospace, monospace;
       --serif: "Instrument Serif", Georgia, serif;
     }
@@ -228,26 +228,48 @@
       font: 700 9px var(--mono); letter-spacing: .12em; color: #77766f; text-transform: uppercase;
     }
     .expense-row {
+      -webkit-appearance: none;
+      appearance: none;
+      border: 0;
       border-bottom: 1px solid var(--line);
       display: grid;
-      grid-template-columns: 50px minmax(0, 1fr) 130px minmax(120px, 140px);
-      align-items: center; gap: 20px; padding: 22px 0;
-      width: 100%; text-align: left; background: none;
+      grid-template-columns: 52px minmax(0, 1fr) 110px 132px;
+      align-items: center;
+      column-gap: 18px;
+      padding: 20px 0;
+      width: 100%;
+      max-width: 100%;
+      text-align: left;
+      background: none;
+      color: inherit;
+      font: inherit;
+      line-height: 1.25;
       white-space: normal;
+      box-sizing: border-box;
     }
     .category-icon, .dot {
       background: var(--cream); border: 1px solid #d7cab4; border-radius: 50%;
       width: 44px; height: 44px; font-size: 20px;
       display: grid; place-items: center;
     }
-    .dot.pic { background-size: cover; background-position: center; font-size: 0; border: 0; }
-    .expense-main, .paid, .expense-amount { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+    .dot.pic, .category-icon.pic { background-size: cover; background-position: center; font-size: 0; border: 0; }
+    .expense-main, .paid, .expense-amount { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
     .expense-main strong {
       font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    .expense-main span, .expense-amount span { color: #737970; font-size: 12px; }
+    .expense-main span, .expense-amount span {
+      color: #737970; font-size: 12px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .paid { width: 110px; }
     .paid span { font: 700 9px var(--mono); letter-spacing: .12em; color: #81867f; }
-    .expense-amount { text-align: right; font-variant-numeric: tabular-nums; }
+    .expense-amount {
+      width: 132px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      justify-self: end;
+    }
+    .expense-amount strong { white-space: nowrap; }
     .site-foot {
       border-top: 1px solid var(--line);
       display: flex; justify-content: space-between; align-items: center;
@@ -402,7 +424,7 @@
     }
 
     function iconFor(desc, type) {
-      if (type === "settle") return ICONS.settle;
+      if (type === "settle") return "💵";
       const t = (desc || "").toLowerCase();
       for (const [k, v] of Object.entries(ICONS)) {
         if (k !== "settle" && t.includes(k)) return v;
@@ -889,21 +911,21 @@
           const who = e.paidBy === "a" ? state.a : state.b;
           const other = e.paidBy === "a" ? state.b : state.a;
           const isSettle = e.type === "settle";
-          const title = isSettle ? "Pago" : (e.desc || "Gasto");
-          const splitTxt = isSettle ? `solo ${other}` : (e.split === "full" ? `solo ${other}` : "mitad");
+          const title = isSettle ? `Pago ${who}` : (e.desc || "Gasto");
+          const splitTxt = isSettle ? "abono a cuenta" : (e.split === "full" ? `solo ${other}` : "mitad");
           const share = isSettle
-            ? `Lo debe ${other}`
+            ? "Abono"
             : e.split === "full"
               ? `Lo debe ${other}`
               : `c/u ${money(shareOf(e), state)}`;
-          const hasPic = !!(e.photoThumb || e.photoId);
-          const cat = categoryOf(e);
+          const hasPic = !isSettle && !!(e.photoThumb || e.photoId);
+          const cat = isSettle ? "Abono" : categoryOf(e);
           list += `
-            <button class="expense-row item" data-id="${e.id}">
-              <div class="category-icon dot ${isSettle ? "settle" : ""} ${hasPic ? "pic" : ""}" ${e.photoThumb ? `style="background-image:url('${e.photoThumb}')"` : ""}>${hasPic ? "" : iconFor(e.desc, e.type)}</div>
+            <button class="expense-row" data-id="${e.id}" type="button">
+              <div class="category-icon${hasPic ? " pic" : ""}"${hasPic && e.photoThumb ? ` style="background-image:url('${e.photoThumb}')"` : ""}>${hasPic ? "" : iconFor(e.desc, e.type)}</div>
               <div class="expense-main">
                 <strong>${esc(title)}</strong>
-                <span>Pagó ${esc(who)} · ${esc(splitTxt)} · ${when(e.ts)}</span>
+                <span>${isSettle ? `Abono a cuenta · ${when(e.ts)}` : `Pagó ${esc(who)} · ${esc(splitTxt)} · ${when(e.ts)}`}</span>
               </div>
               <div class="paid">
                 <span>CATEGORÍA</span>
@@ -931,9 +953,9 @@
           </div>
         </header>
         <section class="stage" id="inicio">
-          <img class="cover-photo" src="cover.jpg?v=2" alt="Israel y Dario frente a la casa" />
+          <img class="cover-photo" src="cover.jpg?v=3" alt="Israel y Dario frente a la casa" />
           <div class="hero-copy">
-            <div class="eyebrow"><span></span> ${esc(monthName)}</div>
+            <div class="eyebrow">${esc(monthName)}</div>
             <h1>Las cuentas claras.<br/><em>La casa en paz.</em></h1>
           </div>
         </section>

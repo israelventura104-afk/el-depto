@@ -381,6 +381,7 @@
     const ROOM_KEY = "cuentas-roomie-room";
     const ME_KEY = "cuentas-roomie-me";
     const BLOB = "https://jsonblob.com/api/jsonBlob";
+    const GH_RAW = "https://raw.githubusercontent.com/israelventura104-afk/el-depto/main";
     const $ = (id) => document.getElementById(id);
 
     const ICONS = {
@@ -510,8 +511,9 @@
     let state = load();
     let ui = { sheet: null, editId: null, importOpen: false };
     let me = localStorage.getItem(ME_KEY) || "";
-    let roomId = new URLSearchParams(location.search).get("sala") || localStorage.getItem(ROOM_KEY) || "";
-    let syncStatus = roomId ? "saving" : "off";
+    let roomId = "depto";
+    let syncStatus = "saving";
+    let apiBase = null;
     let pushTimer = null;
     let pulling = false;
     let pushing = false;
@@ -583,75 +585,86 @@
       });
     }
 
+    async function discoverApi() {
+      try {
+        const r = await fetch(GH_RAW + "/tunnel.json?t=" + Date.now(), { cache: "no-store" });
+        if (!r.ok) return null;
+        const t = await r.json();
+        if (!t || !t.url) return null;
+        const health = await fetch(String(t.url).replace(/\/$/, "") + "/health", { cache: "no-store" });
+        if (!health.ok) return null;
+        apiBase = String(t.url).replace(/\/$/, "");
+        return apiBase;
+      } catch {
+        apiBase = null;
+        return null;
+      }
+    }
+
     async function uploadPhoto(dataUrl) {
-      const res = await fetch(BLOB, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ d: dataUrl }),
-      });
-      if (!res.ok) throw new Error("foto " + res.status);
-      const id = blobIdFromResponse(res);
-      if (!id) throw new Error("sin id foto");
-      photoCache[id] = dataUrl;
-      try { localStorage.setItem("foto-" + id, dataUrl); } catch {}
-      return id;
+      await discoverApi();
+      if (apiBase) {
+        const res = await fetch(apiBase + "/photo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ d: dataUrl }),
+        });
+        if (!res.ok) throw new Error("foto " + res.status);
+        const j = await res.json();
+        if (!j.id) throw new Error("sin id foto");
+        photoCache[j.id] = dataUrl;
+        try { localStorage.setItem("foto-" + j.id, dataUrl); } catch {}
+        return j.id;
+      }
+      photoCache[dataUrl.slice(0, 40)] = dataUrl;
+      return dataUrl;
     }
 
     async function fetchPhoto(id) {
       if (!id) return null;
+      if (id.indexOf("data:image") === 0) return id;
       if (photoCache[id]) return photoCache[id];
       try {
         const local = localStorage.getItem("foto-" + id);
         if (local) { photoCache[id] = local; return local; }
       } catch {}
-      const res = await fetch(BLOB + "/" + encodeURIComponent(id), {
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-      });
-      if (!res.ok) return null;
-      const j = await res.json();
-      const d = j && (j.d || j.photo);
-      if (d) {
-        photoCache[id] = d;
-        try { localStorage.setItem("foto-" + id, d); } catch {}
+      await discoverApi();
+      if (apiBase) {
+        const res = await fetch(apiBase + "/photo/" + encodeURIComponent(id), { cache: "no-store" });
+        if (res.ok) {
+          const j = await res.json();
+          if (j && j.d) {
+            photoCache[id] = j.d;
+            try { localStorage.setItem("foto-" + id, j.d); } catch {}
+            return j.d;
+          }
+        }
       }
-      return d || null;
-    }
-
-    async function createRoom() {
-      const res = await fetch(BLOB, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify(payload()),
-      });
-      if (!res.ok) throw new Error("create " + res.status);
-      const id = blobIdFromResponse(res);
-      if (!id) throw new Error("sin id");
-      setRoom(id);
-      syncStatus = "live";
+      return null;
     }
 
     function schedulePush() {
-      if (!roomId) return;
       clearTimeout(pushTimer);
       pushTimer = setTimeout(pushNow, 280);
     }
 
     async function pushNow() {
-      if (!roomId || pushing) return;
+      if (pushing) return;
       pushing = true;
       syncStatus = "saving";
       updateSyncPill();
       try {
-        const res = await fetch(BLOB + "/" + encodeURIComponent(roomId), {
+        await discoverApi();
+        if (!apiBase) throw new Error("sin tunel");
+        const res = await fetch(apiBase + "/state", {
           method: "PUT",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload()),
         });
         if (!res.ok) throw new Error("put " + res.status);
         syncStatus = "live";
       } catch {
-        syncStatus = "err";
+        syncStatus = "readonly";
       } finally {
         pushing = false;
         updateSyncPill();
@@ -681,16 +694,20 @@
     }
 
     async function pull() {
-      if (!roomId || pulling || pushing) return;
+      if (pulling || pushing) return;
       pulling = true;
       try {
-        const res = await fetch(BLOB + "/" + encodeURIComponent(roomId), {
-          headers: { Accept: "application/json" },
-          cache: "no-store",
-        });
-        if (res.status === 404) { syncStatus = "err"; return; }
-        if (!res.ok) throw new Error("get");
-        const remote = await res.json();
+        await discoverApi();
+        let remote = null;
+        if (apiBase) {
+          const res = await fetch(apiBase + "/state", { cache: "no-store" });
+          if (res.ok) remote = await res.json();
+          syncStatus = "live";
+        } else {
+          const res = await fetch(GH_RAW + "/data.json?t=" + Date.now(), { cache: "no-store" });
+          if (res.ok) remote = await res.json();
+          syncStatus = remote ? "readonly" : "err";
+        }
         if (!remote || !Array.isArray(remote.expenses)) return;
         const merged = mergeStates(state, remote);
         const before = JSON.stringify({
@@ -705,7 +722,6 @@
           localSave();
           if (!ui.sheet) render();
         }
-        syncStatus = "live";
       } catch {
         if (syncStatus !== "saving") syncStatus = "err";
       } finally {
@@ -715,24 +731,15 @@
     }
 
     async function ensureRoom() {
-      if (roomId) {
-        await pull();
-        return;
-      }
-      if (!state || !state.ready) return;
-      try {
-        await createRoom();
-        updateSyncPill();
-      } catch {
-        syncStatus = "err";
-        updateSyncPill();
-      }
+      await pull();
+      if (state && state.ready && apiBase) await pushNow();
     }
 
     function syncLabel() {
       if (syncStatus === "live") return "En vivo · copiar enlace";
       if (syncStatus === "saving") return "Guardando…";
-      if (syncStatus === "err") return "Sin nube · reintentar";
+      if (syncStatus === "readonly") return "Viendo la última copia";
+      if (syncStatus === "err") return "Sin conexión · reintentar";
       return "Solo este aparato";
     }
 
@@ -967,12 +974,12 @@
       const pill = $("syncPill");
       if (pill) {
         pill.onclick = async () => {
-          if (syncStatus === "err" || !roomId) {
+          if (syncStatus === "err" || syncStatus === "readonly") {
             await ensureRoom();
             render();
             return;
           }
-          copyText(shareLink());
+          copyText("https://israelventura104-afk.github.io/el-depto/");
           toast("Enlace copiado. Mándaselo a Dario y ábrelo en tu cel");
         };
       }
@@ -1141,7 +1148,7 @@
                   <button class="chip ${me === "b" ? "on" : ""}" data-me="b" type="button">${esc(state.b)}</button>
                 </div>
               </div>
-              <p class="hint">${roomId ? "Sala compartida activa. El mismo enlace sirve en lap y cel." : "Todavía no hay sala en la nube."}</p>
+              <p class="hint">El enlace es siempre el mismo. En la laptop deja abierta la ventana “El depto - en vivo”.</p>
               <button class="btn full" id="copyLinkBtn">Copiar enlace de la sala</button>
               <button class="btn ghost full" id="retrySyncBtn">Sincronizar ahora</button>
               <button class="btn full" id="saveSet">Guardar nombres</button>
@@ -1311,10 +1318,9 @@
           };
         }
         $("copyLinkBtn").onclick = async () => {
-          if (!roomId) await ensureRoom();
-          if (!roomId) { toast("No se pudo crear la sala. Revisa internet"); return; }
-          copyText(shareLink());
-          toast("Enlace copiado");
+          await ensureRoom();
+          copyText("https://israelventura104-afk.github.io/el-depto/");
+          toast(syncStatus === "live" ? "Enlace copiado. Ya está en vivo" : "Enlace copiado. En la lap abre EnVivo.bat");
         };
         $("retrySyncBtn").onclick = async () => {
           await ensureRoom();

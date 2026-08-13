@@ -232,25 +232,23 @@
       font: 700 9px var(--mono); letter-spacing: .12em; color: #77766f; text-transform: uppercase;
     }
     .expense-row {
-      -webkit-appearance: none;
-      appearance: none;
-      border: 0;
       border-bottom: 1px solid var(--line);
       display: grid;
-      grid-template-columns: 52px minmax(0, 1fr) 110px 132px;
+      grid-template-columns: 52px minmax(0, 1fr) 110px 132px 92px;
       align-items: center;
-      column-gap: 18px;
+      column-gap: 16px;
       padding: 20px 0;
       width: 100%;
       max-width: 100%;
-      text-align: left;
-      background: none;
-      color: inherit;
-      font: inherit;
-      line-height: 1.25;
-      white-space: normal;
       box-sizing: border-box;
     }
+    .row-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .row-actions button {
+      background: none; border: 0; padding: 0;
+      font: 700 11px var(--mono); letter-spacing: .06em; text-transform: uppercase;
+      color: var(--ink); cursor: pointer;
+    }
+    .row-actions .row-del { color: var(--coral); }
     .category-icon, .dot {
       background: var(--cream); border: 1px solid #d7cab4; border-radius: 50%;
       width: 44px; height: 44px; font-size: 20px;
@@ -345,7 +343,8 @@
       .add { padding: 12px 14px; font-size: 13px; }
       .add.icon-only { font-size: 0; padding: 12px; }
       .add.icon-only:after { content: "＋"; font-size: 22px; }
-      .expense-row { grid-template-columns: 44px minmax(0, 1fr) minmax(88px, 110px); gap: 10px; }
+      .expense-row { grid-template-columns: 44px minmax(0, 1fr) minmax(72px, 96px) 72px; gap: 8px; }
+      .row-actions { align-items: flex-end; }
       .paid { display: none; }
       .expense-amount strong { font-size: 14px; }
       .site-foot { flex-direction: column; align-items: flex-start; gap: 10px; padding: 32px 20px; }
@@ -926,7 +925,7 @@
           const hasPic = !isSettle && !!(e.photoThumb || e.photoId);
           const cat = isSettle ? "Abono" : categoryOf(e);
           list += `
-            <button class="expense-row" data-id="${e.id}" type="button">
+            <article class="expense-row" data-id="${e.id}">
               <div class="category-icon${hasPic ? " pic" : ""}"${hasPic && e.photoThumb ? ` style="background-image:url('${e.photoThumb}')"` : ""}>${hasPic ? "" : iconFor(e.desc, e.type)}</div>
               <div class="expense-main">
                 <strong>${esc(title)}</strong>
@@ -940,7 +939,11 @@
                 <strong>${money(e.amount, state)}</strong>
                 <span>${esc(share)}</span>
               </div>
-            </button>`;
+              <div class="row-actions">
+                <button type="button" class="row-edit" data-id="${e.id}">Editar</button>
+                <button type="button" class="row-del" data-id="${e.id}">Borrar</button>
+              </div>
+            </article>`;
         }
         if (last) list += `</div>`;
       }
@@ -1044,12 +1047,35 @@
           });
         };
       }
-      for (const btn of document.querySelectorAll(".expense-row")) {
-        btn.onclick = () => {
-          ui.sheet = "detail";
-          ui.editId = btn.dataset.id;
-          render();
-        };
+      function openEdit(id) {
+        const e = state.expenses.find((x) => String(x.id) === String(id));
+        if (!e) { toast("No encontré ese gasto"); return; }
+        ui.editId = e.id;
+        ui.sheet = e.type === "settle" ? "settle" : "add";
+        render();
+      }
+      function deleteExp(id) {
+        const e = state.expenses.find((x) => String(x.id) === String(id));
+        if (!e) return;
+        const label = e.desc || "este movimiento";
+        if (!confirm("¿Borrar “" + label + "”?")) return;
+        state.deleted = state.deleted || {};
+        state.deleted[e.id] = Date.now();
+        state.expenses = state.expenses.filter((x) => String(x.id) !== String(e.id));
+        save();
+        ui.sheet = null;
+        ui.editId = null;
+        render();
+        toast("Borrado");
+      }
+      for (const btn of document.querySelectorAll(".row-edit")) {
+        btn.onclick = (ev) => { ev.stopPropagation(); openEdit(btn.dataset.id); };
+      }
+      for (const btn of document.querySelectorAll(".row-del")) {
+        btn.onclick = (ev) => { ev.stopPropagation(); deleteExp(btn.dataset.id); };
+      }
+      for (const row of document.querySelectorAll(".expense-row")) {
+        row.onclick = () => openEdit(row.dataset.id);
       }
     }
 
